@@ -12,7 +12,9 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
               integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
               crossorigin="anonymous">
-
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css"/>
+        <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
         <!-- JS -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
@@ -32,12 +34,12 @@
                 let place = $("#place-name").val();
 
                 if (place == "") {
-                    alert("장소를 입력해주세요")
-                    $("#place-name").focus()
+                    alert("장소를 입력해주세요");
+                    $("#place-name").focus();
                     return
                 } else {
-                    alert("수량을 입력해주세요")
-                    $("#order-count").focus()
+                    alert("수량을 입력해주세요");
+                    $("#order-count").focus();
                     return
                 }
             }
@@ -46,12 +48,12 @@
                 let place = $("#place-name").val();
 
                 if (place == "") {
-                    alert("장소를 입력해주세요")
-                    $("#place-name").focus()
+                    alert("장소를 입력해주세요");
+                    $("#place-name").focus();
                     return
                 } else {
                     alert("수량을 입력해주세요")
-                    $("#order-count").focus()
+                    $("#order-count").focus();
                     return
                 }
             }
@@ -71,7 +73,7 @@
 
             .wrap {
                 width: 1000px;
-                margin: 20px;
+                margin: 50px;
             }
 
             .img {
@@ -99,13 +101,61 @@
             .btn-primary {
                 margin-left: 5px;
             }
+
+            .center {
+                text-align: center;
+            }
+
+            .star-list {
+                width: 500px;
+                margin: 20px auto 0 auto;
+            }
+
+            .star-name {
+                display: inline-block;
+            }
+
+            .star-name:hover {
+                text-decoration: underline;
+            }
+
+            .card {
+                margin-bottom: 15px;
+            }
         </style>
     </head>
     <body>
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <a class="nav-item nav-link active" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab"
+                   aria-controls="nav-home" aria-selected="true">Home</a>
+                <a class="nav-item nav-link" id="nav-profile-tab" data-toggle="tab" href="#nav-profile" role="tab"
+                   aria-controls="nav-profile" aria-selected="false">Search</a>
+                <a class="nav-item nav-link" id="nav-contact-tab" data-toggle="tab" href="#nav-contact" role="tab"
+                   aria-controls="nav-contact" aria-selected="false">Saved List</a>
+            </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                <div class="jumbotron jumbotron-fluid">
+                    <div class="container">
+                        <h1 class="display-4">오늘 어디가지?</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+
+            </div>
+            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+
+            </div>
+        </div>
+
+        <!--        Serch 탭에 들어갈것 -->
         <div class="wrap">
-            <div class="img"></div>
+
             <div class="info">
-                <h1>오늘 어디가지?</h1>
 
 
                 <div class="input-group mb-3">
@@ -116,7 +166,7 @@
                     <input type="text" class="form-control" id="place-name">
 
                     <button onclick="search()" type="button" class="btn btn-primary">검색</button>
-                    <button onclick="savePlace()" type="button" class="btn btn-primary">저장</button>
+                    <button onclick="savePlace()" type="input" class="btn btn-dark">저장</button>
                 </div>
 
 
@@ -124,6 +174,9 @@
                     <div class="input-group-prepend">
                         <label class="input-group-text" for="order-count">저장 장소</label>
                     </div>
+
+                    <!--                    추후 Saved place에 들어갈 것-->
+
                     <select class="custom-select" id="order-count">
                         <option selected value=""> -- 장소를 선택하세요 --</option>
                         <option value="1">노량진</option>
@@ -147,6 +200,42 @@
 
                 var map = new kakao.maps.Map(container, options);
             </script>
+
+            <div class="star-list" id="star-box">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="media">
+                            <div class="media-left">
+                                <figure class="image is-50x50">
+                                    <img
+                                            src="https://search.pstatic.net/common/?src=https%3A%2F%2Fssl.pstatic.net%2Fsstatic%2Fpeople%2Fportrait%2F201807%2F20180731143610623-6213324.jpg&type=u120_150&quality=95"
+                                            alt="Placeholder image"
+                                    />
+                                </figure>
+                            </div>
+                            <div class="media-content">
+                                <a href="#" target="_blank" class="star-name title is-4">여기에 식당/장소제목</a>
+                                <p class="subtitle is-6">여기에 요약</p>
+                            </div>
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a href="#" onclick="likeStar('김다미')" class="card-footer-item has-text-info">
+                            저장 (아이콘바꾸기)
+                            <span class="icon">
+              <i class="fas fa-thumbs-up"></i>
+            </span>
+                        </a>
+                        <a href="#" onclick="deleteStar('김다미')" class="card-footer-item has-text-danger">
+                            삭제
+                            <span class="icon">
+              <i class="fas fa-ban"></i>
+            </span>
+                        </a>
+                    </footer>
+                </div>
+            </div>
+
         </div>
     </body>
 </html>
