@@ -25,10 +25,7 @@
         <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
 
         <script type="text/javascript">
-            function isCellPhone(p) {
-                let regExp = /^(01[016789]{1}|02|0[3-9]{1}[0-9]{1})[-][0-9]{3,4}[-][0-9]{4}$/;
-                return regExp.test(p);
-            }
+
 
             function search() {
                 let place = $("#place-name").val();
@@ -51,11 +48,33 @@
                     alert("장소를 입력해주세요");
                     $("#place-name").focus();
                     return
-                } else {
-                    alert("수량을 입력해주세요")
-                    $("#order-count").focus();
-                    return
                 }
+
+                //현재 좌표
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    var latitude = pos.coords.latitude;
+                    var longitude = pos.coords.longitude;
+                    alert("현재 위치는 : " + longitude + ", " + latitude);
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/search/route",
+                        data: {lat_give: latitude, long_give: longitude, place_give: place}, // 데이터를 주는 방법
+                        success: function (response) { // 성공하면
+
+                        }
+                    })
+                    $.ajax({
+                        type: "GET",
+                        url: "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode",
+                        data: {}, // 데이터를 주는 방법
+                        success: function (response) { // 성공하면
+
+                        }
+                    })
+
+                });
+
             }
 
 
@@ -152,7 +171,7 @@
             </div>
         </div>
 
-        <!--        Serch 탭에 들어갈것 -->
+        <!--        Search 탭에 들어갈것 -->
         <div class="wrap">
 
             <div class="info">
@@ -198,7 +217,7 @@
                     level: 4
                 };
 
-                var map = new kakao.maps.Map(container, options);
+
             </script>
 
             <div class="star-list" id="star-box">
