@@ -1,3 +1,5 @@
+import pprint
+
 import requests
 from bs4 import BeautifulSoup
 from flask import Flask, render_template, jsonify, request
@@ -19,31 +21,67 @@ def homework():
 # SEARCH TAB: 검색 (인터넷에서 GET)
 @app.route('/search/place', methods=['GET'])
 def search_place():
-  pass
-
+    pass
 
 
 # 네비게이션 (현재위치에서 목적지)
 @app.route('/search/route', methods=['GET'])
 def search_route():
-    response_data = requests.get('https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving',
-                                 params = {'start':'response_start_long,response_start_lat','goal':'value2'})
-
     # X-NCP-APIGW-API-KEY-ID: xscwyxumfh
     # X-NCP-APIGW-API-KEY: X0ukDd6Z4n1DT4QUW7GlN8Jf0hXq13Alqk825xes
 
     response_start_long = request.args.get('long_give')
     response_start_lat = request.args.get('lat_give')
     response_goal = request.args.get('place_give')
-    print(response_goal,response_start_lat,response_start_long)
+    print(response_goal, response_start_lat, response_start_long)
 
-    # route = response_data.json(['route']['traoptimal']['path'])
-    # distance = response_data.json(['route']['traoptimal']['summary']['distance'])
-    # tollfare = response_data.json(['route']['traoptimal']['summary']['tollFare'])
+    # 목적지 좌표 얻기
+    geocode_goal = requests.get('https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode',
+                                headers={'X-NCP-APIGW-API-KEY-ID': 'xscwyxumfh',
+                                         'X-NCP-APIGW-API-KEY': 'X0ukDd6Z4n1DT4QUW7GlN8Jf0hXq13Alqk825xes'
+                                         },
+                                params={'query': response_goal
+                                        })
+    geocode_goal_json = geocode_goal.json()
+    if geocode_goal_json['status'] != 'OK':
+        print("status is not ok")
+        return jsonify({'result': 'failure'})
+
+    addresses = geocode_goal_json['addresses']
+    if len(addresses) < 1:
+        print("failed to get address")
+        return jsonify({'result': 'failure'})
+
+    address = addresses[0]
+    x = address['x']
+    y = address['y']
+
+    # 경로찾기
+
+    driving_response = requests.get('https://naveropenapi.apigw.ntruss.com/map-direction/v1/driving',
+                                    headers={'X-NCP-APIGW-API-KEY-ID': 'xscwyxumfh',
+                                             'X-NCP-APIGW-API-KEY': 'X0ukDd6Z4n1DT4QUW7GlN8Jf0hXq13Alqk825xes'
+                                             },
+                                    params={'start': f'{response_start_long},{response_start_lat}',
+                                            'goal': f'{x},{y}'
+                                            }
+                                    )
+
+    driving_response_json = driving_response.json()
+    if driving_response_json['code'] != 0:
+        print(driving_response_json['code'])
+        print("code is not ok")
+        return jsonify({'result': 'failure'})
+    pp = pprint.PrettyPrinter(depth=6)
+    pp.pprint(driving_response_json)
+
+    # route = driving_response.json(['route']['traoptimal']['path'])
+    # distance = driving_response.json(['route']['traoptimal']['summary']['distance'])
+    # tollfare = driving_response.json(['route']['traoptimal']['summary']['tollFare'])
 
     # response_goal_
-
-    jsonify({'result': 'success'})
+    print(driving_response_json['route']['traoptimal'][0]['summary']['duration'])
+    return jsonify({'result': 'success', 'route': driving_response_json['route']})
 
 
 # 장소 저장
@@ -56,7 +94,6 @@ def save_place():
 @app.route('/read', methods=['GET'])
 def view_list():
     pass
-
 
 
 # 주문 목록보기(Read) API

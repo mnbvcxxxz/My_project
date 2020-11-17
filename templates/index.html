@@ -15,6 +15,7 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css"/>
         <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+
         <!-- JS -->
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
@@ -23,6 +24,9 @@
 
         <!-- 구글폰트 -->
         <link href="https://fonts.googleapis.com/css?family=Stylish&display=swap" rel="stylesheet">
+        <!--        네이버 맵 api-->
+        <script type="text/javascript"
+                src="https://openapi.map.naver.com/openapi/v3/maps.js?clientId=xscwyxumfh"></script>
 
         <script type="text/javascript">
 
@@ -33,12 +37,47 @@
                 if (place == "") {
                     alert("장소를 입력해주세요");
                     $("#place-name").focus();
-                    return
-                } else {
-                    alert("수량을 입력해주세요");
-                    $("#order-count").focus();
-                    return
+                    return;
                 }
+                console.log('dd');
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    var latitude = pos.coords.latitude;
+                    var longitude = pos.coords.longitude;
+                    console.log('dd2');
+
+                    $.ajax({
+                        type: "GET",
+                        url: "/search/route",
+                        data: {lat_give: latitude, long_give: longitude, place_give: place}, // 데이터를 주는 방법
+
+                        success: function (response) { // 성공하면
+                            console.log(response);
+                            if (response['result'] === 'success') {
+                                // duration은 밀리세컨즈라서 1000으로 나눠줍니다.
+                                // https://apidocs.ncloud.com/ko/ai-naver/maps_directions/driving/ summary 참조
+                                let duration_seconds = response['route']['traoptimal'][0]['summary']['duration'] / 1000;
+                                let duration_minutes = parseInt(duration_seconds / 60);
+                                let distance = parseInt(response['route']['traoptimal'][0]['summary']['distance'] / 1000);
+                                let tollfare = response['route']['traoptimal'][0]['summary']['tollFare']
+
+                                let paths = response['route']['traoptimal'][0]['path'];
+                                for (let i = 0; i < paths.length; i++) {
+                                    let path1 = paths[i];
+
+                                    console.log(path1)
+                                }
+
+                                alert(duration_minutes + "분이 걸립니다." +
+                                    distance + "Km, " + "톨비는" + tollfare + "원 입니다."
+                                );
+                            } else {
+                                alert("경로찾기를 실패했습니다.")
+                            }
+                        }
+                    });
+                }, function (dd) {
+                    console.log("error occurred")
+                })
             }
 
             function savePlace() {
@@ -49,34 +88,7 @@
                     $("#place-name").focus();
                     return
                 }
-
-                //현재 좌표
-                navigator.geolocation.getCurrentPosition(function (pos) {
-                    var latitude = pos.coords.latitude;
-                    var longitude = pos.coords.longitude;
-                    alert("현재 위치는 : " + longitude + ", " + latitude);
-
-                    $.ajax({
-                        type: "GET",
-                        url: "/search/route",
-                        data: {lat_give: latitude, long_give: longitude, place_give: place}, // 데이터를 주는 방법
-                        success: function (response) { // 성공하면
-
-                        }
-                    })
-                    $.ajax({
-                        type: "GET",
-                        url: "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode",
-                        data: {}, // 데이터를 주는 방법
-                        success: function (response) { // 성공하면
-
-                        }
-                    })
-
-                });
-
             }
-
 
         </script>
 
@@ -95,13 +107,6 @@
                 margin: 50px;
             }
 
-            .img {
-                background-image: url("https://blog.hmgjournal.com/images_n/contents/hyundai-autumn-drive%20(14).jpg");
-                background-size: cover;
-                background-position: center;
-                width: 500px;
-                height: 300px;
-            }
 
             .info {
                 width: 500px;
@@ -109,21 +114,11 @@
                 margin-bottom: 20px;
             }
 
-            .order {
-                text-align: center;
-            }
-
-            .orders {
-                margin-top: 100px;
-            }
 
             .btn-primary {
                 margin-left: 5px;
             }
 
-            .center {
-                text-align: center;
-            }
 
             .star-list {
                 width: 500px;
@@ -171,6 +166,7 @@
             </div>
         </div>
 
+
         <!--        Search 탭에 들어갈것 -->
         <div class="wrap">
 
@@ -194,6 +190,7 @@
                         <label class="input-group-text" for="order-count">저장 장소</label>
                     </div>
 
+
                     <!--                    추후 Saved place에 들어갈 것-->
 
                     <select class="custom-select" id="order-count">
@@ -207,18 +204,44 @@
                 </div>
             </div>
 
-            <div id="map" style="width:500px;height:400px;"></div>
-            <script type="text/javascript"
-                    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=a8714afb784a7016985b85b094920054"></script>
-            <script>
-                var container = document.getElementById('map');
-                var options = {
-                    center: new kakao.maps.LatLng(33.450701, 126.570667),
-                    level: 4
-                };
+            <!--            지도 API-->
+            <body>
+                <!-- 지도를 표시할 div 입니다 -->
+                <div id="map" style="width:500px;height:500px;"></div>
+
+                <script type="text/javascript"
+                        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=a8714afb784a7016985b85b094920054"></script>
+                <script>
+                    navigator.geolocation.getCurrentPosition(function (pos) {
+                        var latitude = pos.coords.latitude;
+                        var longitude = pos.coords.longitude;
 
 
-            </script>
+                        var mapContainer = document.getElementById('map'), // 지도를 표시할 div
+                            mapOption = {
+                                center: new kakao.maps.LatLng(35.907757, 127.76692200000001), // 지도의 중심좌표
+                                level: 3 // 지도의 확대 레벨
+                            };
+
+                        // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다
+                        var map = new kakao.maps.Map(mapContainer, mapOption);
+
+                        var polyline = new kakao.maps.Polyline({
+                            map: map,
+                            path: [
+                                new kakao.maps.LatLng(33.452344169439975, 126.56878163224233),
+                                new kakao.maps.LatLng(33.452739313807456, 126.5709308145358),
+                                new kakao.maps.LatLng(33.45178067090639, 126.5726886938753)
+                            ],
+                            strokeWeight: 2,
+                            strokeColor: '#FF00FF',
+                            strokeOpacity: 0.8,
+                            strokeStyle: 'solid'
+                        });
+});
+
+                </script>
+            </body>
 
             <div class="star-list" id="star-box">
                 <div class="card">
@@ -257,4 +280,6 @@
 
         </div>
     </body>
+
+
 </html>
